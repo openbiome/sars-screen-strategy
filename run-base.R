@@ -19,8 +19,6 @@ inset2s <- function(lst, names, elts) {
 base_par <- read_tsv("parameters.tsv") %>%
   { as.list(set_names(.$estimate, .$name)) }
 
-base_par$swab_interval <- 14
-
 tic <- Sys.time()
 
 sims <- crossing(
