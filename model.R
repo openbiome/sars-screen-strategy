@@ -1,15 +1,6 @@
-#!/usr/bin/env Rscript --vanilla
-
 library(tidyverse)
 
-par <- read_tsv("parameters.tsv") %>%
-  { as.list(set_names(.$estimate, .$name)) }
-
-par$swab_interval <- 14
-par$battery$stool <- FALSE
-par$battery$serology <- FALSE
-
-simulate_results <- function(true_condition, sens, spec) {
+run_tests <- function(true_condition, sens, spec) {
   p <- if_else(true_condition, sens, 1 - spec)
   result <- as.logical(rbinom(length(true_condition), 1, p))
   result
@@ -43,7 +34,8 @@ enforce_tests <- function(days, results) {
 }
 
 safe_assign <- function(x, start, end, value) {
-  if (start > length(x)) return(x)
+  if (start < 0 || end < 0) stop(str_glue("Bad start={start} or end={end} value"))
+  if (start > length(x) || end < start) return(x)
   if (end > length(x)) end <- length(x)
   x[start:end] <- value
   x
@@ -56,7 +48,8 @@ model <- function(par) {
     status <- rep(NA, max_time)
 
     # Determine days of status changes
-    i1_day <- rnbinom(1, 1, daily_inf_prob)
+    # (add 1 to rnbinom for 1-indexing)
+    i1_day <- 1 + rnbinom(1, 1, daily_inf_prob)
     i2_day <- i1_day + i1_duration
     r1_day <- i2_day + i2_duration
     r2_day <- r1_day + r1_duration
@@ -75,21 +68,21 @@ model <- function(par) {
     donation_days <- seq(1, max_time, by = donation_interval)
 
     # Simulate virus presence in stool
-    virus_in_stool <- simulate_results(
+    virus_in_stool <- run_tests(
       (status %in% c("i2", "r1"))[donation_days],
       shed_prob, 1.0
     )
 
     # Simulate results of tests
-    serology_results <- simulate_results(
+    serology_results <- run_tests(
       (status %in% c("r1", "r2"))[screen_days],
       serology_sens, serology_spec
     )
-    swab_results <- simulate_results(
+    swab_results <- run_tests(
       (status %in% c("i1", "i2"))[swab_days],
       swab_sens, swab_spec
     )
-    stool_results <- simulate_results(
+    stool_results <- run_tests(
       virus_in_stool,
       stool_sens, stool_spec
     )
@@ -115,5 +108,3 @@ model <- function(par) {
     )
   })
 }
-
-model(par)

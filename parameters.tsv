@@ -1,5 +1,4 @@
 name	estimate	lower	upper	descriptions
-n_iter	10	NA	NA	Number of iterations
 max_time	365	NA	NA	Days until end of simulation
 screen_interval	60	NA	NA	Days between screening
 donation_interval	4	1	10	Days between donations
