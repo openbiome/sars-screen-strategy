@@ -1,5 +1,5 @@
 rule top:
-    input: expand("results/results-{x}.pdf", x=["base"])
+    input: expand("results/results-{x}.pdf", x=["base", "sens"])
 
 rule clean:
     shell: "rm -f cache/* results/*"
@@ -11,5 +11,5 @@ rule analyze:
 
 rule run:
     output: "cache/sims-{x}.rds"
-    input: "model.R", "parameters.tsv", script="run-{x}.R"
+    input: "run-utils.R", "model.R", "parameters.tsv", script="run-{x}.R"
     shell: "./{input.script}"

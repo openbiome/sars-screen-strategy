@@ -90,8 +90,8 @@ model <- function(par) {
     # Determine outcomes of donations based on tests
     actions <- list(enforce_tests(swab_days, swab_results))
 
-    if (battery$serology) actions <- c(actions, list(enforce_tests(screen_days, serology_results)))
-    if (battery$stool) actions <- c(actions, list(enforce_tests(donation_days, stool_results)))
+    if (use_serology) actions <- c(actions, list(enforce_tests(screen_days, serology_results)))
+    if (use_stool) actions <- c(actions, list(enforce_tests(donation_days, stool_results)))
 
     deferred <- any(map_lgl(actions, ~ .$deferred))
     end_day <- min(map_dbl(actions, ~ .$end_day))

@@ -6,9 +6,7 @@ library(cowplot)
 sims <- read_rds("cache/sims-base.rds")
 
 results <- sims %>%
-  mutate(battery = map(par, ~ .$battery)) %>%
-  select(battery, sim) %>%
-  unnest_wider(battery) %>%
+  unnest_wider(par) %>%
   unnest_wider(sim)
 
 results
