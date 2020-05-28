@@ -1,11 +1,11 @@
-all: results/output.pdf
+all: results/output-base.pdf
 
 .PHONY: clean
 clean:
 	rm -f *.rds
 
-cache/sims.rds: parameters.tsv model.R run.R
-	./run.R
+cache/sims-base.rds: parameters.tsv model.R run-base.R
+	./run-base.R
 
-results/output.pdf: cache/sims.rds analyze.R
-	./analyze.R
+results/output-base.pdf: cache/sims-base.rds analyze-base.R
+	./analyze-base.R

@@ -42,4 +42,4 @@ toc <- Sys.time()
 
 print(str_glue("Ran {nrow(sims)} sims in {toc - tic} sec"))
 
-write_rds(sims, "cache/sims.rds")
+write_rds(sims, "cache/sims-base.rds")

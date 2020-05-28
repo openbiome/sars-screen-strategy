@@ -3,7 +3,7 @@
 library(tidyverse)
 library(cowplot)
 
-sims <- read_rds("cache/sims.rds")
+sims <- read_rds("cache/sims-base.rds")
 
 results <- sims %>%
   mutate(battery = map(par, ~ .$battery)) %>%
@@ -36,4 +36,4 @@ plot <- results %>%
   theme_cowplot() +
   theme(legend.position = c(0.65, 0.5))
 
-ggsave("results/output.pdf")
+ggsave("results/results-base.pdf")
