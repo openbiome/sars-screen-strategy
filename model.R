@@ -6,8 +6,8 @@ par <- read_tsv("parameters.tsv") %>%
   { as.list(set_names(.$estimate, .$name)) }
 
 par$swab_interval <- 14
-par$battery$stool <- TRUE
-par$battery$serology <- TRUE
+par$battery$stool <- FALSE
+par$battery$serology <- FALSE
 
 simulate_results <- function(true_condition, sens, spec) {
   p <- if_else(true_condition, sens, 1 - spec)
@@ -42,6 +42,13 @@ enforce_tests <- function(days, results) {
   )
 }
 
+safe_assign <- function(x, start, end, value) {
+  if (start > length(x)) return(x)
+  if (end > length(x)) end <- length(x)
+  x[start:end] <- value
+  x
+}
+
 model <- function(par) {
   with(par, {
     # Initialize a vector of status; each entry is a day
@@ -55,17 +62,17 @@ model <- function(par) {
     r2_day <- r1_day + r1_duration
 
     # Assign those status changes in the status matrix
-    status[1:(i1_day - 1)] <- "u"
-    status[i1_day:(i2_day - 1)] <- "i1"
-    status[i2_day:(r1_day - 1)] <- "i2"
-    status[r1_day:(r2_day - 1)] <- "r1"
-    status[r2_day:max_time] <- "r2"
+    status <- safe_assign(status, 1, i1_day - 1, "u")
+    status <- safe_assign(status, i1_day, i2_day - 1, "i1")
+    status <- safe_assign(status, i2_day, r1_day - 1, "i2")
+    status <- safe_assign(status, r1_day, r2_day - 1, "r1")
+    status <- safe_assign(status, r2_day, max_time, "r2")
     if (any(is.na(status))) stop("Missing status")
 
     # Assign dates of screens, swabs, and donations
-    screen_days   <- rep(1, max_time, by = screen_interval)
-    swab_days     <- rep(1, max_time, by = swab_interval)
-    donation_days <- rep(1, max_time, by = donation_interval)
+    screen_days   <- seq(1, max_time, by = screen_interval)
+    swab_days     <- seq(1, max_time, by = swab_interval)
+    donation_days <- seq(1, max_time, by = donation_interval)
 
     # Simulate virus presence in stool
     virus_in_stool <- simulate_results(
