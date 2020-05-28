@@ -7,3 +7,10 @@ daily_inf_prob	1e-4	1e-5	1e-3	Daily probability of infection
 i1_duration	2	1	4	Duration of infected, pre-shed period
 i2_duration	5	3	10	Duration of infected, shedding period
 r1_duration	7	3	15	Duration of recovered, shedding period
+shed_prob	0.90	0.25	1.0	Probability that donation made during shedding period is virus positive
+serology_sens	0.95	0.80	0.99	Serology IgG/IgM test sensitivity
+serology_spec	0.59	0.80	0.99	Serology IgG/IgM test specificity
+swab_sens	0.75	0.50	0.95	NP swab PCR test sensitivity
+swab_spec	0.99	0.95	1.0	NP swab PCR test specificity
+stool_sens	0.90	0.50	0.99	Stool PCR test sensitivity
+stool_spec	0.99	0.95	1.0	Stool PCR test specificity
