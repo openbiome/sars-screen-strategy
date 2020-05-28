@@ -24,19 +24,19 @@ base_par$swab_interval <- 14
 tic <- Sys.time()
 
 sims <- crossing(
-  iter = 1:100,
+  iter = 1:1e3,
   stool = c(FALSE, TRUE),
   serology = c(FALSE, TRUE)
 ) %>%
   mutate(
     battery = pmap(
       list(stool, serology),
-      ~ inset2s(base_par, c("stool", "serology"), c(..1, ..2))
+      ~ list(stool = ..1, serology = ..2)
     ),
     par = map(battery, ~ inset2(base_par, "battery", .)),
     sim = map(par, model)
   ) %>%
-    unnest_wider(sim)
+  select(par, sim)
 
 toc <- Sys.time()
 
