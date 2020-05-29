@@ -12,7 +12,12 @@ results <- sims %>%
 results
 
 plot <- results %>%
-  mutate(input_key = interaction(stool, serology)) %>%
+  mutate(input_key = case_when(
+      use_serology & use_stool ~ "NP, serology, stool",
+      use_serology & !use_stool ~ "NP, serology",
+      !use_serology & use_stool ~ "NP, stool",
+      !use_serology & !use_stool ~ "NP"
+  )) %>%
   select(input_key, n_positive_released, n_negative_released) %>%
   pivot_longer(cols = c(n_positive_released, n_negative_released), names_to = "output_key") %>%
   mutate_at(
@@ -29,7 +34,7 @@ plot <- results %>%
   labs(
     x = "No. of donations",
     y = "No. of simulations",
-    fill = "Stool tested? . Serology?"
+    fill = "Testing strategy"
   ) +
   theme_cowplot() +
   theme(legend.position = c(0.65, 0.5))
