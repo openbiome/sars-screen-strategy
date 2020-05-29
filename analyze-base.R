@@ -40,3 +40,4 @@ plot <- results %>%
   theme(legend.position = c(0.65, 0.5))
 
 ggsave("results/results-base.pdf")
+ggsave("results/results-base.png")

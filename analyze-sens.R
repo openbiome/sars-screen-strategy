@@ -41,9 +41,14 @@ plot <- plot_data %>%
     scales = "free"
   ) +
   geom_point(shape = 3) +
+  labs(
+    x = "Outcome value",
+    y = "Parameter value"
+  ) +
   theme_cowplot()
 
 ggsave("results/results-sens.pdf", height = 21)
+ggsave("results/results-sens.png", height = 21)
 
 # Correlations --------------------------------------------------------
 
