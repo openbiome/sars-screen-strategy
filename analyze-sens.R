@@ -11,20 +11,12 @@ par_names <- parameters %>%
   filter(type != "fixed") %>%
   pull(name)
 
-key_names <- c("use_serology", "use_stool")
-
 out_names <- c("n_negative_released", "n_positive_released")
 
 results <- sims %>%
   unnest_wider(par) %>%
   unnest_wider(sim) %>%
-  mutate(key = case_when(
-      use_serology & use_stool ~ "NP, serology, stool",
-      use_serology & !use_stool ~ "NP, serology",
-      !use_serology & use_stool ~ "NP, stool",
-      !use_serology & !use_stool ~ "NP"
-  )) %>%
-  select_at(c("key", par_names, out_names))
+  select_at(c("strategy", par_names, out_names))
 
 plot_data <- results %>%
   # remove fixed columns
@@ -34,7 +26,7 @@ plot_data <- results %>%
   pivot_longer(cols = intersect(out_names, names(.)), names_to = "sim_name", values_to = "sim_value")
 
 plot <- plot_data %>%
-  ggplot(aes(sim_value, par_value, color = key)) +
+  ggplot(aes(sim_value, par_value, color = strategy)) +
   facet_grid(
     rows = vars(par_name),
     cols = vars(sim_name),
@@ -64,7 +56,7 @@ get_corrs <- function(tbl) {
 }
 
 corr <- results %>%
-  group_by(key) %>%
+  group_by(strategy) %>%
   nest() %>%
   ungroup() %>%
   mutate(corrs = map(data, get_corrs)) %>%

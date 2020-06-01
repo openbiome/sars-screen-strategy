@@ -10,14 +10,11 @@ tic <- Sys.time()
 
 sims <- crossing(
   iter = 1:1e3,
-  stool = c(FALSE, TRUE),
-  serology = c(FALSE, TRUE)
+  strategy_i = 1:length(strategies)
 ) %>%
   mutate(
-    par = pmap(
-      list(stool, serology),
-      ~ inset2s(base_par, c("use_stool", "use_serology"), c(..1, ..2))
-    ),
+    strategy_par = map(strategy_i, ~ strategies[[.]]),
+    par = map(strategy_par, ~ c(base_par, .)),
     sim = map(par, model)
   ) %>%
   select(par, sim)

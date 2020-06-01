@@ -34,7 +34,9 @@ enforce_tests <- function(days, results) {
 }
 
 safe_assign <- function(x, start, end, value) {
-  if (start < 0 || end < 0) stop(str_glue("Bad start={start} or end={end} value"))
+  if (start < 0 || end < 0) {
+    stop(str_glue("Bad start={start} or end={end} value"))
+  }
   if (start > length(x) || end < start) return(x)
   if (end > length(x)) end <- length(x)
   x[start:end] <- value
@@ -88,9 +90,9 @@ model <- function(par) {
     )
 
     # Determine outcomes of donations based on tests
-    actions <- list(enforce_tests(swab_days, swab_results))
-
+    actions <- list()
     if (use_serology) actions <- c(actions, list(enforce_tests(screen_days, serology_results)))
+    if (use_swab) actions <- c(actions, list(enforce_tests(swab_days, swab_results)))
     if (use_stool) actions <- c(actions, list(enforce_tests(donation_days, stool_results)))
 
     deferred <- any(map_lgl(actions, ~ .$deferred))

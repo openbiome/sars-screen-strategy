@@ -12,13 +12,7 @@ results <- sims %>%
 results
 
 plot <- results %>%
-  mutate(input_key = case_when(
-      use_serology & use_stool ~ "NP, serology, stool",
-      use_serology & !use_stool ~ "NP, serology",
-      !use_serology & use_stool ~ "NP, stool",
-      !use_serology & !use_stool ~ "NP"
-  )) %>%
-  select(input_key, n_positive_released, n_negative_released) %>%
+  select(strategy, n_positive_released, n_negative_released) %>%
   pivot_longer(cols = c(n_positive_released, n_negative_released), names_to = "output_key") %>%
   mutate_at(
     "output_key",
@@ -29,7 +23,7 @@ plot <- results %>%
   ) %>%
   ggplot(aes(value)) +
   facet_wrap(vars(output_key), scales = "free") +
-  geom_histogram(aes(fill = input_key), position = "dodge", bins = 10) +
+  geom_histogram(aes(fill = strategy), position = "dodge", bins = 10) +
   scale_y_continuous(expand = c(0, 0)) +
   labs(
     x = "No. of donations",

@@ -3,8 +3,7 @@
 library(tidyverse)
 source("run-utils.R")
 
-# make a function (par_factory_factory) that produces a function
-# (par_factory) that produces lists of parameters
+# produce a list of parameters values given ranges
 par_factory <- function(parameters) {
   fixed_par <- parameters %>%
     filter(type == "fixed") %>%
@@ -37,15 +36,12 @@ tic <- Sys.time()
 
 sims <- crossing(
   iter = 1:1e3,
-  stool = c(FALSE, TRUE),
-  serology = c(FALSE, TRUE)
+  strategy_i = 1:length(strategies)
 ) %>%
   mutate(
     base_par = map(iter, ~ par_factory(parameters)),
-    par = pmap(
-      list(base_par, stool, serology),
-      ~ inset2s(..1, c("use_stool", "use_serology"), c(..2, ..3))
-    ),
+    strategy_par = map(strategy_i, ~ strategies[[.]]),
+    par = map2(base_par, strategy_par, c),
     sim = map(par, model)
   ) %>%
   select(par, sim)

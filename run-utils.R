@@ -3,6 +3,8 @@ source("model.R")
 
 set.seed(1234)
 
+# Handy functions -----------------------------------------------------
+
 inset2 <- function(lst, name, elt) {
   lst[[name]] <- elt
   lst
@@ -15,6 +17,22 @@ inset2s <- function(lst, names, elts) {
 }
 
 named_list <- function(names, values) as.list(set_names(values, names))
+
+
+# Set up test options -------------------------------------------------
+
+strategies <- tribble(
+  ~strategy, ~use_stool, ~use_swab, ~use_serology,
+  "Stool only", T, F, F,
+  "NP only", F, T, F,
+  "NP, stool", T, T, F,
+  "NP, serology", F, T, T,
+  "NP, serology, stool", T, T, T
+) %>%
+  transpose()
+
+
+# Read parameters -----------------------------------------------------
 
 parameters <- read_tsv("parameters.tsv")
 
