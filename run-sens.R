@@ -34,17 +34,11 @@ par_factory <- function(parameters) {
 
 tic <- Sys.time()
 
-sims <- crossing(
-  iter = 1:1e3,
-  strategy_i = 1:length(strategies)
-) %>%
+sims <- tibble(iter = 1:1e3) %>%
   mutate(
-    base_par = map(iter, ~ par_factory(parameters)),
-    strategy_par = map(strategy_i, ~ strategies[[.]]),
-    par = map2(base_par, strategy_par, c),
+    par = map(iter, ~ par_factory(parameters)),
     sim = map(par, model)
-  ) %>%
-  select(par, sim)
+  )
 
 toc <- Sys.time()
 

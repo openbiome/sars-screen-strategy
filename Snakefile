@@ -4,12 +4,17 @@ rule top:
 rule clean:
     shell: "rm -f cache/* results/*"
 
-rule analyze:
+rule plot:
     output: "results/results-{x}.pdf"
-    input: "cache/sims-{x}.rds", script="analyze-{x}.R"
+    input: "cache/analysis-{x}.rds", script="plot-{x}.R"
+    shell: "./{input.script}"
+
+rule analyze:
+    output: "cache/analysis-{x}.rds"
+    input: "cache/sims-{x}.rds", "analyze-utils.R", script="analyze-{x}.R"
     shell: "./{input.script}"
 
 rule run:
     output: "cache/sims-{x}.rds"
-    input: "run-utils.R", "model.R", "parameters.tsv", script="run-{x}.R"
+    input: "model.R", "parameters.tsv", "run-utils.R", script="run-{x}.R"
     shell: "./{input.script}"

@@ -1,16 +1,19 @@
 name	estimate	lower	upper	type	descriptions
-max_time	365	NA	NA	fixed	Days until end of simulation
-screen_interval	60	NA	NA	fixed	Days between screening
-swab_interval	14	NA	NA	fixed	Days between NP swabs
+max_days	365	NA	NA	fixed	Days until end of simulation
 donation_interval	4	1	10	integer	Days between donations
 daily_inf_prob	1e-4	1e-5	1e-3	real	Daily probability of infection
 i1_duration	2	1	4	integer	Duration of infected, pre-shed period
 i2_duration	5	3	10	integer	Duration of infected, shedding period
 r1_duration	7	3	15	integer	Duration of recovered, shedding period
-shed_prob	0.90	0.25	1.0	real	Probability that donation made during shedding period is virus positive
+shed_prob	0.50	0.33	0.66	real	Probability that a donor, if infected, will shed virus in stool
+serology_interval	60	NA	NA	fixed	Days between serology tests
 serology_sens	0.95	0.80	0.99	real	Serology IgG/IgM test sensitivity
 serology_spec	0.95	0.80	0.99	real	Serology IgG/IgM test specificity
+swab_interval	14	NA	NA	fixed	Days between NP PCR tests
 swab_sens	0.75	0.50	0.95	real	NP swab PCR test sensitivity
 swab_spec	0.99	0.95	1.0	real	NP swab PCR test specificity
+stool_interval1	7	NA	NA	fixed	Days between stool interval (1)
+stool_interval2	14	NA	NA	fixed	Days between stool interval (2)
+stool_interval3	21	NA	NA	fixed	Days between stool interval (3)
 stool_sens	0.90	0.50	0.99	real	Stool PCR test sensitivity
 stool_spec	0.99	0.95	1.0	real	Stool PCR test specificity

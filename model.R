@@ -1,38 +1,46 @@
 library(tidyverse)
 
-run_tests <- function(true_condition, sens, spec) {
-  p <- if_else(true_condition, sens, 1 - spec)
-  result <- as.logical(rbinom(length(true_condition), 1, p))
-  result
-}
+# Run tests -----------------------------------------------------------
+#
+# Inputs:
+# - true_condition :: logical vector with length equal to number of
+#   test days
+# - sens :: sensitivity of test
+# - spec :: specificity of test
+#
+# Returns: a list with
+# - results (bool vector): test results on test days
+# - last_release_day (int): last day of released material
+run_tests <- function(true_condition, sens, spec, interval, max_days) {
+  test_days <- seq(1, max_days, by = interval)
+  # probability of positive result on each test day
+  probability_positive <- if_else(true_condition[test_days], sens, 1 - spec)
+  results <- rbernoulli(length(probability_positive), probability_positive)
 
-enforce_tests <- function(days, results) {
-  # look for first positive test
+  # look for index of first positive test
   i <- detect_index(results, ~ .)
 
   if (i == 0) {
-    # all tests negative
-    deferred <- FALSE
-    n_tests <- length(results)
-    end_day <- max(days)
+    # all tests negative; release everything up to last test
+    last_release_day <- max(test_days)
   } else if (i == 1) {
-    # the first test was positive
-    deferred <- TRUE
-    n_tests <- 1
-    end_day <- 0
+    # the first test was positive; release nothing
+    last_release_day <- 0
   } else {
-    deferred <- TRUE
-    n_tests <- i
-    end_day <- days[i - 1]
+    # release everything up to last *negative* test
+    last_release_day <- test_days[i - 1]
   }
 
   list(
-    deferred = deferred,
-    n_tests = n_tests,
-    end_day = end_day
+    test_days = test_days,
+    results = results,
+    last_release_day = last_release_day
   )
+
 }
 
+# Do x[start:end] <- value, but being smart about what happens if
+# start or end are weird
 safe_assign <- function(x, start, end, value) {
   if (start < 0 || end < 0) {
     stop(str_glue("Bad start={start} or end={end} value"))
@@ -47,7 +55,7 @@ model <- function(par) {
   with(par, {
     # Initialize a vector of status; each entry is a day
     # rows = donors/iterations; columns = days; cells = status on that day
-    status <- rep(NA, max_time)
+    status <- rep(NA, max_days)
 
     # Determine days of status changes
     # (add 1 to rnbinom for 1-indexing)
@@ -57,56 +65,48 @@ model <- function(par) {
     r2_day <- r1_day + r1_duration
 
     # Assign those status changes in the status matrix
-    status <- safe_assign(status, 1, i1_day - 1, "u")
-    status <- safe_assign(status, i1_day, i2_day - 1, "i1")
-    status <- safe_assign(status, i2_day, r1_day - 1, "i2")
-    status <- safe_assign(status, r1_day, r2_day - 1, "r1")
-    status <- safe_assign(status, r2_day, max_time, "r2")
+    status <- status %>%
+      safe_assign(1,      i1_day - 1, "u")  %>%
+      safe_assign(i1_day, i2_day - 1, "i1") %>%
+      safe_assign(i2_day, r1_day - 1, "i2") %>%
+      safe_assign(r1_day, r2_day - 1, "r1") %>%
+      safe_assign(r2_day, max_days,   "r2")
+
     if (any(is.na(status))) stop("Missing status")
 
-    # Assign dates of screens, swabs, and donations
-    screen_days   <- seq(1, max_time, by = screen_interval)
-    swab_days     <- seq(1, max_time, by = swab_interval)
-    donation_days <- seq(1, max_time, by = donation_interval)
+    # Donor is a potential stool shedder with some probability
+    is_shedder <- rbernoulli(1, shed_prob)
 
-    # Simulate virus presence in stool
-    virus_in_stool <- run_tests(
-      (status %in% c("i2", "r1"))[donation_days],
-      shed_prob, 1.0
+    # Determine on which days the donor is shedding virus in stool
+    # (i.e., "test" with perfect sensitivity & specificity every day)
+    virus_in_stool <- run_tests(is_shedder & (status %in% c("i2", "r1")), 1.0, 1.0, 1, max_days)$results
+
+    # Run tests
+    tests <- list(
+      serology = run_tests(status %in% c("r1", "r2"), serology_sens, serology_spec, serology_interval, max_days),
+      swab     = run_tests(status %in% c("i1", "i2"), swab_sens,     swab_spec,     swab_interval,     max_days),
+      stool1   = run_tests(virus_in_stool,            stool_sens,    stool_spec,    stool_interval1,   max_days),
+      stool2   = run_tests(virus_in_stool,            stool_sens,    stool_spec,    stool_interval2,   max_days),
+      stool3   = run_tests(virus_in_stool,            stool_sens,    stool_spec,    stool_interval3,   max_days)
     )
 
-    # Simulate results of tests
-    serology_results <- run_tests(
-      (status %in% c("r1", "r2"))[screen_days],
-      serology_sens, serology_spec
-    )
-    swab_results <- run_tests(
-      (status %in% c("i1", "i2"))[swab_days],
-      swab_sens, swab_spec
-    )
-    stool_results <- run_tests(
-      virus_in_stool,
-      stool_sens, stool_spec
-    )
+    # Get the first day that at least one of the tests had as its last day
+    donation_days <- seq(1, max_days, by = donation_interval)
 
-    # Determine outcomes of donations based on tests
-    actions <- list()
-    if (use_serology) actions <- c(actions, list(enforce_tests(screen_days, serology_results)))
-    if (use_swab) actions <- c(actions, list(enforce_tests(swab_days, swab_results)))
-    if (use_stool) actions <- c(actions, list(enforce_tests(donation_days, stool_results)))
-
-    deferred <- any(map_lgl(actions, ~ .$deferred))
-    end_day <- min(map_dbl(actions, ~ .$end_day))
-
-    n_released <- sum(donation_days < end_day)
-    n_positive_released <- sum(virus_in_stool[donation_days < end_day])
-    n_negative_released <- n_released - n_positive_released
+    # Count number of
+    # end_day <- min(map_dbl(tests, ~ .$end_day))
+    # n_released <- sum(virus_in_stool$test_days <
+    # n_positive_released <- sum(virus_in_stool[donation_days < end_day])
+    # n_negative_released <- n_released - n_positive_released
 
     list(
-      n_positive_released = n_positive_released,
-      n_negative_released = n_negative_released,
-      deferred = deferred,
-      end_day = end_day
+      donation_days = donation_days,
+      virus_in_stool = virus_in_stool,
+      tests = tests
+      # n_positive_released = n_positive_released,
+      # n_negative_released = n_negative_released,
+      # deferred = deferred,
+      # end_day = end_day
     )
   })
 }
