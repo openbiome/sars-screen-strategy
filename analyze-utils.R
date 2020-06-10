@@ -25,7 +25,7 @@ strategies <- tribble(
   "NP, stool (14)", c("swab", "stool2"),
   "NP, stool (21)", c("swab", "stool3"),
   "NP, serology", c("swab", "serology"),
-  "NP, ser., stool (1)", c("swab", "serology", "stool1"),
+  "NP, ser., stool (7)", c("swab", "serology", "stool1"),
   "Stool only (7)", c("stool1"),
   "Stool only (14)", c("stool2"),
   "Stool only (21)", c("stool3")

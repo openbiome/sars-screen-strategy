@@ -23,10 +23,10 @@ plot_data <- results %>%
   pivot_longer(cols = intersect(out_names, names(.)), names_to = "sim_name", values_to = "sim_value")
 
 plot <- plot_data %>%
-  ggplot(aes(sim_value, par_value, color = strategy)) +
+  ggplot(aes(sim_value, par_value)) +
   facet_grid(
     rows = vars(par_name),
-    cols = vars(sim_name),
+    cols = vars(strategy, sim_name),
     scales = "free"
   ) +
   geom_point(shape = 3) +
@@ -36,8 +36,8 @@ plot <- plot_data %>%
   ) +
   theme_cowplot()
 
-ggsave("results/results-sens.pdf", height = 21)
-ggsave("results/results-sens.png", height = 21)
+ggsave("results/results-sens.pdf", width = 28, height = 21)
+ggsave("results/results-sens.png", width = 28, height = 21)
 
 # Correlations --------------------------------------------------------
 
