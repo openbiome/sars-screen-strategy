@@ -29,7 +29,7 @@ plot <- results %>%
     fill = "Testing strategy"
   ) +
   theme_cowplot() +
-  theme(legend.position = c(0.75, 0.5))
+  theme(legend.position = c(0.725, 0.5))
 
 ggsave("results/results-base.pdf")
 ggsave("results/results-base.png")
