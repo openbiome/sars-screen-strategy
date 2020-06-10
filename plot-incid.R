@@ -8,9 +8,9 @@ results <- read_rds("cache/analysis-incid.rds")
 
 plot <- results %>%
   pivot_longer(cols = c(n_positive, n_negative)) %>%
-  arrange(daily_inf_prob) %>%
+  arrange(incidence) %>%
   mutate(
-    row_label = recode(daily_inf_prob,
+    row_label = recode(incidence,
       `1e-5` = "10^-5",
       `1e-4` = "10^-4",
       `1e-3` = "10^-3",

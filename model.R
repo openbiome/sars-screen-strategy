@@ -59,7 +59,7 @@ model <- function(par) {
 
     # Determine days of status changes
     # (add 1 to rnbinom for 1-indexing)
-    i1_day <- 1 + rnbinom(1, 1, daily_inf_prob)
+    i1_day <- 1 + rnbinom(1, 1, incidence)
     i2_day <- i1_day + i1_duration
     r1_day <- i2_day + i2_duration
     r2_day <- r1_day + r1_duration

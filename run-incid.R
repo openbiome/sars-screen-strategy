@@ -6,18 +6,18 @@ source("run-utils.R")
 base_par <- parameters %>%
   { named_list(.$name, .$estimate) }
 
-daily_inf_probs <- parameters %>%
-  filter(name == "daily_inf_prob") %>%
+incidences <- parameters %>%
+  filter(name == "incidence") %>%
   with({ c(lower, estimate, upper) })
 
 tic <- Sys.time()
 
 sims <- crossing(
   iter = 1:1e3,
-  daily_inf_prob = daily_inf_probs
+  incidence = incidences
 ) %>%
   mutate(
-    par = map(daily_inf_prob, ~ assign_in(base_par, "daily_inf_prob", .)),
+    par = map(incidence, ~ assign_in(base_par, "incidence", .)),
     sim = map(par, model)
   )
 

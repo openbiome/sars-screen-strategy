@@ -10,7 +10,7 @@ tic <- Sys.time()
 results <- sims %>%
   crossing(strategies) %>%
   mutate(released = map2(sim, test_suite, get_releases)) %>%
-  select(iter, daily_inf_prob, strategy, released) %>%
+  select(iter, incidence, strategy, released) %>%
   unnest_wider(released)
 
 toc <- Sys.time()
