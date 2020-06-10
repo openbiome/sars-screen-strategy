@@ -8,17 +8,25 @@ results <- read_rds("cache/analysis-incid.rds")
 
 plot <- results %>%
   pivot_longer(cols = c(n_positive, n_negative)) %>%
+  arrange(daily_inf_prob) %>%
   mutate(
-    label = recode(name,
-      n_positive = "Virus-positive donations",
-      n_negative = "Virus-negative donations"
+    row_label = recode(daily_inf_prob,
+      `1e-5` = "10^-5",
+      `1e-4` = "10^-4",
+      `1e-3` = "10^-3",
+    ),
+    row_label = fct_inorder(row_label),
+    col_label = recode(name,
+      n_positive = "'Virus-positive donations'",
+      n_negative = "'Virus-negative donations'"
     )
   ) %>%
   ggplot(aes(value)) +
   facet_grid(
-    rows = vars(daily_inf_prob),
-    cols = vars(label),
-    scales = "free_x"
+    rows = vars(row_label),
+    cols = vars(col_label),
+    scales = "free_x",
+    labeller = label_parsed
   ) +
   scale_x_binned(show.limits = TRUE) +
   geom_bar(aes(fill = strategy), position = "dodge") +
