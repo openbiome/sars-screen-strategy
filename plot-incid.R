@@ -2,9 +2,9 @@
 
 library(tidyverse)
 library(cowplot)
-source("analyze-utils.R") # for colors
+source("analyze-utils.R") # for strategy colors
 
-results <- read_rds("cache/analysis-base.rds")
+results <- read_rds("cache/analysis-incid.rds")
 
 plot <- results %>%
   pivot_longer(cols = c(n_positive, n_negative)) %>%
@@ -15,7 +15,11 @@ plot <- results %>%
     )
   ) %>%
   ggplot(aes(value)) +
-  facet_wrap(vars(label), scales = "free") +
+  facet_grid(
+    rows = vars(daily_inf_prob),
+    cols = vars(label),
+    scales = "free_x"
+  ) +
   scale_x_binned(show.limits = TRUE) +
   geom_bar(aes(fill = strategy), position = "dodge") +
   scale_y_continuous(expand = c(0, 0)) +
@@ -29,7 +33,9 @@ plot <- results %>%
     fill = "Testing strategy"
   ) +
   theme_cowplot() +
-  theme(legend.position = c(0.75, 0.5))
+  theme(
+    # legend.position = c(0.75, 0.5)
+  )
 
-ggsave("results/results-base.pdf")
-ggsave("results/results-base.png")
+ggsave("results/results-incid.pdf")
+ggsave("results/results-incid.png")

@@ -19,15 +19,15 @@ get_releases <- function(sim, test_suite) {
 }
 
 strategies <- tribble(
-  ~strategy, ~test_suite,
-  "NP only", c("swab"),
-  "NP, stool (7)", c("swab", "stool1"),
-  "NP, stool (14)", c("swab", "stool2"),
-  "NP, stool (21)", c("swab", "stool3"),
-  "NP, serology", c("swab", "serology"),
-  "NP, ser., stool (7)", c("swab", "serology", "stool1"),
-  "Stool only (7)", c("stool1"),
-  "Stool only (14)", c("stool2"),
-  "Stool only (21)", c("stool3")
+  ~strategy, ~test_suite, ~color,
+  "NP only", c("swab"), "#e41a1c",
+  "NP, stool (21)", c("swab", "stool3"), "#377eb8",
+  "NP, stool (14)", c("swab", "stool2"), "#7AA9D0",
+  "NP, stool (7)", c("swab", "stool1"), "#BCD4E7",
+  "NP, serology", c("swab", "serology"), "#4daf4a",
+  "NP, ser., stool (7)", c("swab", "serology", "stool1"), "#A6D7A5",
+  "Stool only (21)", c("stool3"), "#984ea3",
+  "Stool only (14)", c("stool2"), "#BA89C2",
+  "Stool only (7)", c("stool1"), "#DDC4E0"
 ) %>%
   mutate_at("strategy", fct_inorder)

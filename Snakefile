@@ -1,12 +1,12 @@
 rule top:
-    input: expand("results/results-{x}.pdf", x=["base", "sens"])
+    input: expand("results/results-{x}.pdf", x=["base", "sens", "incid"])
 
 rule clean:
     shell: "rm -f cache/* results/*"
 
 rule plot:
     output: "results/results-{x}.pdf"
-    input: "cache/analysis-{x}.rds", script="plot-{x}.R"
+    input: "cache/analysis-{x}.rds", "analyze-utils.R", script="plot-{x}.R"
     shell: "./{input.script}"
 
 rule analyze:
