@@ -108,20 +108,10 @@ model <- function(par) {
     # Get the first day that at least one of the tests had as its last day
     donation_days <- seq(1, max_days, by = donation_interval)
 
-    # Count number of
-    # end_day <- min(map_dbl(tests, ~ .$end_day))
-    # n_released <- sum(virus_in_stool$test_days <
-    # n_positive_released <- sum(virus_in_stool[donation_days < end_day])
-    # n_negative_released <- n_released - n_positive_released
-
     list(
       donation_days = donation_days,
       virus_in_stool = virus_in_stool,
       tests = tests
-      # n_positive_released = n_positive_released,
-      # n_negative_released = n_negative_released,
-      # deferred = deferred,
-      # end_day = end_day
     )
   })
 }
