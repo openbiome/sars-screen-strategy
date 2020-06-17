@@ -47,3 +47,14 @@ plot <- results %>%
 
 ggsave("results/results-incid.pdf")
 ggsave("results/results-incid.png")
+
+
+# Make a table of number of simulations with nonzero positive releases
+
+table <- results %>%
+  group_by(incidence, strategy) %>%
+  summarize(n_fail = sum(n_positive > 0)) %>%
+  pivot_wider(names_from = incidence, values_from = n_fail) %>%
+  arrange(strategy)
+
+write_tsv(table, "results/results-incid-counts.tsv")

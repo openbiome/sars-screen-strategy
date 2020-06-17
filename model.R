@@ -74,15 +74,30 @@ model <- function(par) {
 
     if (any(is.na(status))) stop("Missing status")
 
-    # Donor is a potential stool shedder with some probability
-    is_shedder <- rbernoulli(1, shed_prob)
+    # Determine if the donor becomes symptomatic
+    possibly_symptomatic <- rbernoulli(1, 1 - asymp_prob)
+    is_symptomatic <- possibly_symptomatic && i1_day <= max_days
+
+    # Build a test-like results list for symptoms:
+    # - "Test" is on the first day of infection, or the last day of the simulation
+    # - "Result" is positive if infected during the simulation and has
+    #   possibility for symptoms
+    # - Last release day is: if not symptomatic, end of simulation; if
+    #   symptomatic, 14 days before symptoms emerged
+    symptoms <- list(
+      test_days = min(i1_day, max_days),
+      results = is_symptomatic,
+      last_release_day = if_else(is_symptomatic, i1_day - 14, max_days)
+    )
 
     # Determine on which days the donor is shedding virus in stool
     # (i.e., "test" with perfect sensitivity & specificity every day)
+    is_shedder <- rbernoulli(1, shed_prob)
     virus_in_stool <- run_tests(is_shedder & (status %in% c("i2", "r1")), 1.0, 1.0, 1, max_days)$results
 
     # Run tests
     tests <- list(
+      symptmos = symptoms,
       serology = run_tests(status %in% c("r1", "r2"), serology_sens, serology_spec, serology_interval, max_days),
       swab     = run_tests(status %in% c("i1", "i2"), swab_sens,     swab_spec,     swab_interval,     max_days),
       stool1   = run_tests(virus_in_stool,            stool_sens,    stool_spec,    stool_interval1,   max_days),
