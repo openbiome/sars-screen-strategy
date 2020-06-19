@@ -28,8 +28,9 @@ plot <- results %>%
     y = "No. of simulations",
     fill = "Testing strategy"
   ) +
+  guides(fill = guide_legend(title.position = "top", nrow = 3)) +
   theme_cowplot() +
-  theme(legend.position = c(0.725, 0.5))
+  theme(legend.position = "bottom")
 
-ggsave("results/results-base.pdf")
-ggsave("results/results-base.png")
+ggsave("results/results-base.pdf", width = 7.2)
+ggsave("results/results-base.png", width = 7.2)

@@ -40,13 +40,12 @@ plot <- results %>%
     y = "No. of simulations",
     fill = "Testing strategy"
   ) +
+  guides(fill = guide_legend(title.position = "top", nrow = 3)) +
   theme_cowplot() +
-  theme(
-    # legend.position = c(0.75, 0.5)
-  )
+  theme(legend.position = "bottom")
 
-ggsave("results/results-incid.pdf")
-ggsave("results/results-incid.png")
+ggsave("results/results-incid.pdf", width = 7.2)
+ggsave("results/results-incid.png", width = 7.2)
 
 
 # Make a table of number of simulations with nonzero positive releases
