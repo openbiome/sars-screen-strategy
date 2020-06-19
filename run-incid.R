@@ -3,9 +3,6 @@
 library(tidyverse)
 source("run-utils.R")
 
-base_par <- parameters %>%
-  { named_list(.$name, .$estimate) }
-
 incidences <- parameters %>%
   filter(name == "incidence") %>%
   with({ c(lower, estimate, upper) })
@@ -13,7 +10,7 @@ incidences <- parameters %>%
 tic <- Sys.time()
 
 sims <- crossing(
-  iter = 1:1e3,
+  iter = 1:base_par$n_iter,
   incidence = incidences
 ) %>%
   mutate(

@@ -34,7 +34,7 @@ par_factory <- function(parameters) {
 
 tic <- Sys.time()
 
-sims <- tibble(iter = 1:1e3) %>%
+sims <- tibble(iter = 1:base_par$n_iter) %>%
   mutate(
     par = map(iter, ~ par_factory(parameters)),
     sim = map(par, model)

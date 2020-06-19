@@ -3,12 +3,9 @@
 library(tidyverse)
 source("run-utils.R")
 
-base_par <- parameters %>%
-  { named_list(.$name, .$estimate) }
-
 tic <- Sys.time()
 
-sims <- tibble(iter = 1:1e3) %>%
+sims <- tibble(iter = 1:base_par$n_iter) %>%
   mutate(sim = map(iter, ~ model(base_par)))
 
 toc <- Sys.time()

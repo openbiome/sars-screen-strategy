@@ -24,3 +24,6 @@ parameters %>%
     stop(str_glue("Bad parameter specification: unknown types {.$type} for {.$name}"))
     }
   }
+
+base_par <- parameters %>%
+  { named_list(.$name, .$estimate) }

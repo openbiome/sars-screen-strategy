@@ -1,4 +1,5 @@
 name	estimate	lower	upper	type	descriptions
+n_iter	1e4	NA	NA	fixed	Number of simulations
 max_days	365	NA	NA	fixed	Days until end of simulation
 donation_interval	4	1	10	integer	Days between donations
 incidence	1e-4	1e-5	1e-3	real	Daily probability of infection
