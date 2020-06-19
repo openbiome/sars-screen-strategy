@@ -48,23 +48,28 @@ ggsave("results/results-incid.pdf", width = 7.2)
 ggsave("results/results-incid.png", width = 7.2)
 
 
-# Make a table of number of simulations with nonzero positive releases
-sim_counts <- results %>%
-  group_by(incidence, strategy) %>%
-  summarize(n_fail = sum(n_positive > 0)) %>%
-  pivot_wider(names_from = incidence, values_from = n_fail) %>%
-  arrange(strategy)
-
-write_tsv(sim_counts, "results/results-incid-sim-counts.tsv")
-
 # Make a table of the number of positive donations released
+get_per <- function(x) {
+  crossing(a = 1:9, n = 0:4) %>%
+    mutate(
+      per = a * 10 ** n,
+      estimate = 1 / per,
+      error = x - estimate,
+      abs_error = abs(error)
+    ) %>%
+    arrange(abs_error) %>%
+    slice(1) %>%
+    pull(per)
+}
+
 donation_counts <- results %>%
   group_by(incidence, strategy) %>%
   summarize_at(c("n_positive", "n_negative"), sum) %>%
   mutate(
     n_total = n_positive + n_negative,
-    f_positive = n_positive / n_total
+    f_positive = n_positive / n_total,
+    per = map_dbl(f_positive, get_per)
   ) %>%
   arrange(incidence, strategy)
 
-write_tsv(donation_counts, "results/results-incid-donation-counts.tsv")
+write_tsv(donation_counts, "results/results-incid-counts.tsv")
