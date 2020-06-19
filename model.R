@@ -97,12 +97,12 @@ model <- function(par) {
 
     # Run tests
     tests <- list(
-      symptmos = symptoms,
-      serology = run_tests(status %in% c("r1", "r2"), serology_sens, serology_spec, serology_interval, max_days),
-      swab     = run_tests(status %in% c("i1", "i2"), swab_sens,     swab_spec,     swab_interval,     max_days),
-      stool1   = run_tests(virus_in_stool,            stool_sens,    stool_spec,    stool_interval1,   max_days),
-      stool2   = run_tests(virus_in_stool,            stool_sens,    stool_spec,    stool_interval2,   max_days),
-      stool3   = run_tests(virus_in_stool,            stool_sens,    stool_spec,    stool_interval3,   max_days)
+      symptmos    = symptoms,
+      serology    = run_tests(status %in% c("r1", "r2"), serology_sens, serology_spec, serology_interval, max_days),
+      swab        = run_tests(status %in% c("i1", "i2"), swab_sens,     swab_spec,     swab_interval,     max_days),
+      stool14     = run_tests(virus_in_stool,            stool_sens,    stool_spec,    14,                max_days),
+      stool28     = run_tests(virus_in_stool,            stool_sens,    stool_spec,    28,                max_days),
+      every_stool = run_tests(virus_in_stool,            stool_sens,    stool_spec,    donation_interval, max_days)
     )
 
     # Get the first day that at least one of the tests had as its last day

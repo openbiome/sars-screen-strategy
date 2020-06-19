@@ -20,14 +20,14 @@ get_releases <- function(sim, test_suite) {
 
 strategies <- tribble(
   ~strategy, ~test_suite, ~color,
-  "Stool only (21)", c("symptoms", "stool3"), "#984ea3",
-  "Stool only (14)", c("symptoms", "stool2"), "#BA89C2",
-  "Stool only (7)", c("symptoms", "stool1"), "#DDC4E0",
+  "Stool only (28)", c("symptoms", "stool28"), "#984ea3", 
+  "Stool only (14)", c("symptoms", "stool14"), "#BA89C2",
+  "Stool only (every)", c("symptoms", "every_stool"), "#DDC4E0", 
   "Swab only", c("symptoms", "swab"), "#e41a1c",
-  "Swab, stool (21)", c("symptoms", "swab", "stool3"), "#377eb8",
-  "Swab, stool (14)", c("symptoms", "swab", "stool2"), "#7AA9D0",
-  "Swab, stool (7)", c("symptoms", "swab", "stool1"), "#BCD4E7",
+  "Swab, stool (28)", c("symptoms", "swab", "stool28"), "#377eb8",
+  "Swab, stool (14)", c("symptoms", "swab", "stool14"), "#7AA9D0",
+  "Swab, stool (every)", c("symptoms", "swab", "every_stool"), "#BCD4E7",
   "Swab, serology", c("symptoms", "swab", "serology"), "#4daf4a",
-  "Swab, ser., stool (7)", c("symptoms", "swab", "serology", "stool1"), "#A6D7A5"
+  "Swab, ser., stool (every)", c("symptoms", "swab", "serology", "every_stool"), "#A6D7A5"
 ) %>%
   mutate_at("strategy", fct_inorder)

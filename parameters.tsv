@@ -13,8 +13,5 @@ serology_spec	0.95	0.80	0.99	real	Serology test specificity
 swab_interval	14	NA	NA	fixed	Days between swab tests
 swab_sens	0.75	0.50	0.95	real	Swab test sensitivity
 swab_spec	0.99	0.95	1.0	real	Swab test specificity
-stool_interval1	7	NA	NA	fixed	Days between stool interval (1)
-stool_interval2	14	NA	NA	fixed	Days between stool interval (2)
-stool_interval3	21	NA	NA	fixed	Days between stool interval (3)
 stool_sens	0.90	0.50	0.99	real	Stool test sensitivity
 stool_spec	0.99	0.95	1.0	real	Stool test specificity
