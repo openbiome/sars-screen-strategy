@@ -6,7 +6,25 @@ source("analyze-utils.R") # for strategy colors
 
 results <- read_rds("cache/analysis-incid.rds")
 
-plot <- results %>%
+# Check that the categories I'll use are good ones
+with(results, {
+  if (any(n_negative > 99)) stop("over negative limit")
+  if (any(n_positive > 3)) stop("over positive limit")
+})
+
+plot_data <- results %>%
+  mutate(
+    n_positive = factor(n_positive),
+    n_negative = factor(
+      case_when(
+        between(n_negative,  0, 24) ~  "0-24",
+        between(n_negative, 25, 49) ~ "25-49",
+        between(n_negative, 50, 74) ~ "50-74",
+        between(n_negative, 75, 99) ~ "75-99",
+      ),
+      levels = c("0-24", "25-49", "50-74", "75-99")
+    )
+  ) %>%
   pivot_longer(cols = c(n_positive, n_negative)) %>%
   arrange(incidence) %>%
   mutate(
@@ -20,7 +38,9 @@ plot <- results %>%
       n_positive = "'Virus-positive donations'",
       n_negative = "'Virus-negative donations'"
     )
-  ) %>%
+  )
+
+plot <- plot_data %>%
   ggplot(aes(value)) +
   facet_grid(
     rows = vars(row_label),
@@ -28,7 +48,6 @@ plot <- results %>%
     scales = "free_x",
     labeller = label_parsed
   ) +
-  scale_x_binned(show.limits = TRUE) +
   geom_bar(aes(fill = strategy), position = "dodge") +
   scale_y_continuous(expand = c(0, 0)) +
   scale_fill_manual(
@@ -42,7 +61,10 @@ plot <- results %>%
   ) +
   guides(fill = guide_legend(title.position = "top", nrow = 3)) +
   theme_cowplot() +
-  theme(legend.position = "bottom")
+  theme(
+    legend.position = "bottom",
+    panel.spacing = unit(1, "lines")
+  )
 
 ggsave("results/results-incid.pdf", width = 7.2)
 ggsave("results/results-incid.png", width = 7.2)
