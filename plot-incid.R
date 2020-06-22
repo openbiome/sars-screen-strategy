@@ -49,7 +49,7 @@ plot <- plot_data %>%
     labeller = label_parsed
   ) +
   geom_bar(aes(fill = strategy), position = "dodge") +
-  scale_y_continuous(expand = c(0, 0)) +
+  scale_y_continuous(expand = c(0, 250)) +
   scale_fill_manual(
     breaks = strategies$strategy,
     values = strategies$color
@@ -71,17 +71,19 @@ ggsave("results/results-incid.png", width = 7.2)
 
 
 # Make a table of the number of positive donations released
-get_per <- function(x) {
-  crossing(a = 1:9, n = 0:4) %>%
-    mutate(
-      per = a * 10 ** n,
-      estimate = 1 / per,
-      error = x - estimate,
-      abs_error = abs(error)
-    ) %>%
-    arrange(abs_error) %>%
-    slice(1) %>%
-    pull(per)
+
+get_range <- function(x, n, digits = 1) {
+  test <- binom.test(x, n)
+
+  values <- list(
+    estimate = test$estimate,
+    lci = test$conf.int[1], uci = test$conf.int[2]
+  ) %>%
+    lapply(function(y) signif(y, digits)) %>%
+    # pcm = per cent mille = 1 per 100,000
+    lapply(function(y) str_c(y * 1e5, " pcm"))
+
+  with(values, { str_glue("{estimate} ({lci} to {uci}; {x}/{n})")} )
 }
 
 donation_counts <- results %>%
@@ -90,8 +92,17 @@ donation_counts <- results %>%
   mutate(
     n_total = n_positive + n_negative,
     f_positive = n_positive / n_total,
-    per = map_dbl(f_positive, get_per)
+    one_per = map_dbl(f_positive, ~ signif(1 / ., 1)),
+    range = map2_chr(n_positive, n_total, get_range)
   ) %>%
-  arrange(incidence, strategy)
+  arrange(incidence, strategy) %>%
+  select(incidence, strategy, one_per, range)
 
-write_tsv(donation_counts, "results/results-incid-counts.tsv")
+donation_counts %>%
+  select(incidence, strategy, one_per) %>%
+  write_tsv("results/results-incid-per.tsv")
+
+donation_counts %>%
+  select(strategy, incidence, range) %>%
+  pivot_wider(names_from = incidence, values_from = range) %>%
+  write_tsv("results/results-incid-prop.tsv")
