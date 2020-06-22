@@ -1,4 +1,4 @@
-rule top:
+rule all:
     input: expand("results/results-{x}.pdf", x=["base", "sens", "incid"])
 
 rule clean:

@@ -1,7 +1,8 @@
 library(tidyverse)
 
-# Run tests -----------------------------------------------------------
-#
+# Utility functions ---------------------------------------------------
+
+# "Run tests" function
 # Inputs:
 # - true_condition :: logical vector with length equal to number of
 #   test days
@@ -9,8 +10,9 @@ library(tidyverse)
 # - spec :: specificity of test
 #
 # Returns: a list with
-# - results (bool vector): test results on test days
-# - last_release_day (int): last day of released material
+# - test_days (int vector) :: days on which the tests occurred
+# - results (bool vector) :: test results on test days
+# - last_release_day (int) :: last day of released material
 run_tests <- function(true_condition, sens, spec, interval, max_days) {
   test_days <- seq(1, max_days, by = interval)
   # probability of positive result on each test day
@@ -40,7 +42,7 @@ run_tests <- function(true_condition, sens, spec, interval, max_days) {
 }
 
 # Do x[start:end] <- value, but being smart about what happens if
-# start or end are weird
+# start or end are out of bounds
 safe_assign <- function(x, start, end, value) {
   if (start < 0 || end < 0) {
     stop(str_glue("Bad start={start} or end={end} value"))
@@ -51,10 +53,20 @@ safe_assign <- function(x, start, end, value) {
   x
 }
 
+
+# Main model function -------------------------------------------------
+# Simulate the donor's disease course and the results of *all* tests. The
+# matter of which tests actually get implemented and how many donations are
+# released is determined in the analysis scripts.
+# 
+# Returns: a list with
+# - donation_days (int vector) :: days on which donor donated
+# - virus_in_stool (bool vector) :: one entry per day
+# - tests (list of lists) :: see run_tests function
+
 model <- function(par) {
   with(par, {
-    # Initialize a vector of status; each entry is a day
-    # rows = donors/iterations; columns = days; cells = status on that day
+    # Initialize a vector of status (i.e., disease state); each entry is a day
     status <- rep(NA, max_days)
 
     # Determine days of status changes
@@ -64,7 +76,7 @@ model <- function(par) {
     r1_day <- i2_day + i2_duration
     r2_day <- r1_day + r1_duration
 
-    # Assign those status changes in the status matrix
+    # Assign those status changes in the status vector
     status <- status %>%
       safe_assign(1,      i1_day - 1, "u")  %>%
       safe_assign(i1_day, i2_day - 1, "i1") %>%
@@ -74,13 +86,15 @@ model <- function(par) {
 
     if (any(is.na(status))) stop("Missing status")
 
-    # Determine if the donor becomes symptomatic
+    # Determine if the donor becomes symptomatic. Being symptomatic requires
+    # that this donor is "capable" of symptoms and that they become infected
+    # during the simulation period
     possibly_symptomatic <- rbernoulli(1, 1 - asymp_prob)
     is_symptomatic <- possibly_symptomatic && i1_day <= max_days
 
     # Build a test-like results list for symptoms:
-    # - "Test" is on the first day of infection, or the last day of the simulation
-    # - "Result" is positive if infected during the simulation and has
+    # - The "test" is the first day of infection, or the last day of the simulation
+    # - The "result" is positive if infected during the simulation and has
     #   possibility for symptoms
     # - Last release day is: if not symptomatic, end of simulation; if
     #   symptomatic, 14 days before symptoms emerged
@@ -90,8 +104,10 @@ model <- function(par) {
       last_release_day = if_else(is_symptomatic, i1_day - 14, max_days)
     )
 
-    # Determine on which days the donor is shedding virus in stool
-    # (i.e., "test" with perfect sensitivity & specificity every day)
+    # Build a test-like results list for shedding in stool:
+    # - The "test" occurs every day during the I_2 and R_1 periods
+    # - The "result" shows the days that a donor is shedding in stool
+    # - The sensitivity and specificity are perfect (shedders shed, others don't)
     is_shedder <- rbernoulli(1, shed_prob)
     virus_in_stool <- run_tests(is_shedder & (status %in% c("i2", "r1")), 1.0, 1.0, 1, max_days)$results
 
