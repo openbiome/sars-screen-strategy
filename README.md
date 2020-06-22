@@ -1,5 +1,7 @@
 # SARS-CoV-2 screening strategies
 
+[![DOI](https://zenodo.org/badge/267861858.svg)](https://zenodo.org/badge/latestdoi/267861858)
+
 Code for "Modelling donor screening strategies to reduce the risk of SARS-CoV-2 via
 fecal microbiota transplantation"
 
