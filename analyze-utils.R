@@ -26,6 +26,7 @@ get_releases <- function(sim, test_suite) {
 # List of strategies used across simulations
 strategies <- tribble(
   ~strategy,                   ~test_suite,                                      ~color,
+  "Symptoms only",             c("symptoms"),                                    "black",
   "Stool only (28)",           c("symptoms", "stool28"),                         "#984ea3",
   "Stool only (14)",           c("symptoms", "stool14"),                         "#ba89c2",
   "Stool only (every)",        c("symptoms", "every_stool"),                     "#ddc4e0",

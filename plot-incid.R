@@ -59,7 +59,7 @@ plot <- plot_data %>%
     y = "No. of simulations",
     fill = "Testing strategy"
   ) +
-  guides(fill = guide_legend(title.position = "top", nrow = 3)) +
+  guides(fill = guide_legend(title.position = "top", nrow = 4)) +
   theme_cowplot() +
   theme(
     legend.position = "bottom",
