@@ -72,6 +72,23 @@ ggsave("results/results-incid.png", width = 7.2)
 
 # Make a table of the number of positive donations released
 
+lsignif <- function(x, digits) lapply(x, function(xx) signif(xx, digits))
+
+any_duplicated_nonzero <- function(x) {
+  as.numeric(x) %>%
+    { duplicated(.)[. != 0] } %>%
+    any()
+}
+
+min_signif <- function(x) {
+  if (any_duplicated_nonzero(x)) stop("Duplicated non-zero values")
+
+  digits <- 1
+  while (any_duplicated_nonzero(lsignif(x, digits))) digits <- digits + 1
+
+  lsignif(x, digits)
+}
+
 get_range <- function(x, n, digits = 1) {
   test <- binom.test(x, n)
 
@@ -79,7 +96,7 @@ get_range <- function(x, n, digits = 1) {
     estimate = test$estimate,
     lci = test$conf.int[1], uci = test$conf.int[2]
   ) %>%
-    lapply(function(y) signif(y, digits)) %>%
+    min_signif() %>%
     # pcm = per cent mille = 1 per 100,000
     lapply(function(y) str_c(y * 1e5, " pcm"))
 
