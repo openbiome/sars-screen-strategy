@@ -117,6 +117,7 @@ donation_counts <- results %>%
 
 donation_counts %>%
   select(incidence, strategy, one_per) %>%
+  pivot_wider(names_from = incidence, values_from = one_per) %>%
   write_tsv("results/results-incid-per.tsv")
 
 donation_counts %>%
