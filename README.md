@@ -3,7 +3,7 @@
 [![DOI](https://zenodo.org/badge/267861858.svg)](https://zenodo.org/badge/latestdoi/267861858)
 
 Code for "Modelling donor screening strategies to reduce the risk of SARS-CoV-2 via
-fecal microbiota transplantation"
+fecal microbiota transplantation" (preprint DOI [10.1101/2020.06.24.169094](https://dx.doi.org/10.1101/2020.06.24.169094)
 
 ## Getting started
 
