@@ -16,40 +16,34 @@ results <- read_rds("cache/analysis-sens.rds") %>%
   select_at(c("iter", "strategy", par_names, out_names))
 
 plot_data <- results %>%
+  filter(strategy == "Swab, ser., stool (every)") %>%
   # remove fixed columns
   select_if(function(x) length(unique(x)) > 1) %>%
   # intersect here because of columns dropped by select_if
-  pivot_longer(cols = intersect(par_names, names(.)), names_to = "par_name", values_to = "par_value") %>%
-  pivot_longer(cols = intersect(out_names, names(.)), names_to = "sim_name", values_to = "sim_value")
+  pivot_longer(cols = intersect(par_names, names(.)), names_to = "par_name", values_to = "par_value")
 
 plot <- plot_data %>%
-  ggplot(aes(sim_value, par_value)) +
-  facet_grid(
-    rows = vars(par_name),
-    cols = vars(strategy, sim_name),
-    scales = "free"
-  ) +
-  geom_point(shape = 3) +
+  ggplot(aes(par_value, n_positive)) +
+  facet_wrap(vars(par_name), scales = "free") +
+  geom_point(shape = 1, position = position_jitter(height = 0.1)) +
+  scale_y_continuous(breaks = 1:3) +
   labs(
-    x = "Outcome value",
-    y = "Parameter value"
+    x = "Parameter value",
+    y = "No. positive donations released"
   ) +
-  theme_cowplot()
+  theme_cowplot() +
+  theme(axis.text.x = element_text(size = 8))
 
-ggsave("results/results-sens.pdf", width = 28, height = 21)
-ggsave("results/results-sens.png", width = 28, height = 21)
+ggsave("results/results-sens.pdf", width = 9, height = 6.5, useDingbats = FALSE)
 
 # Correlations --------------------------------------------------------
 
 get_corrs <- function(tbl) {
   crossing(par_name = par_names, out_name = out_names) %>%
-    mutate(
-      test = map2(par_name, out_name, ~ cor.test(tbl[[.x]], tbl[[.y]], method = "spearman")),
-      estimate = map_dbl(test, ~ .$estimate),
-      p_value = map_dbl(test, ~ .$p.value),
-      sig = p.adjust(p_value, "BH") < 0.05
-    ) %>%
-    select(-test)
+    mutate(correlation = map2_dbl(
+        par_name, out_name,
+        ~ cor(tbl[[.x]], tbl[[.y]], method = "spearman")
+    ))
 }
 
 corr <- results %>%
@@ -57,9 +51,9 @@ corr <- results %>%
   nest() %>%
   ungroup() %>%
   mutate(corrs = map(data, get_corrs)) %>%
-  select(-data) %>%
+  select(strategy, corrs) %>%
   unnest(cols = corrs) %>%
-  arrange(desc(abs(estimate))) %>%
-  mutate_if(is.numeric, ~ signif(., 2))
+  arrange(desc(abs(correlation))) %>%
+  mutate_at("correlation", ~ signif(., 2))
 
 write_tsv(corr, "results/results-sens-corr.tsv")
