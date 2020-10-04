@@ -58,7 +58,7 @@ safe_assign <- function(x, start, end, value) {
 # Simulate the donor's disease course and the results of *all* tests. The
 # matter of which tests actually get implemented and how many donations are
 # released is determined in the analysis scripts.
-# 
+#
 # Returns: a list with
 # - donation_days (int vector) :: days on which donor donated
 # - virus_in_stool (bool vector) :: one entry per day
@@ -85,6 +85,7 @@ model <- function(par) {
       safe_assign(r2_day, max_days,   "r2")
 
     if (any(is.na(status))) stop("Missing status")
+    if (length(status) != max_days) stop("Bad status length")
 
     # Determine if the donor becomes symptomatic. Being symptomatic requires
     # that this donor is "capable" of symptoms and that they become infected
@@ -101,32 +102,35 @@ model <- function(par) {
     symptoms <- list(
       test_days = min(i1_day, max_days),
       results = is_symptomatic,
-      last_release_day = if_else(is_symptomatic, i1_day - 14, max_days)
+      last_release_day = if_else(is_symptomatic, max(i1_day - 14, 0), max_days)
     )
 
-    # Build a test-like results list for shedding in stool:
-    # - The "test" occurs every day during the I_2 and R_1 periods
-    # - The "result" shows the days that a donor is shedding in stool
-    # - The sensitivity and specificity are perfect (shedders shed, others don't)
+    # Determine presence of virus in stool:
+    #  1. Is the donor a shedder? y/n
+    #  2. If yes, then there is virus in stool for every day of I2 and R1
+    #  3. Simulate the results of a (hypothetical) daily stool test
     is_shedder <- rbernoulli(1, shed_prob)
-    virus_in_stool <- run_tests(is_shedder & (status %in% c("i2", "r1")), 1.0, 1.0, 1, max_days)$results
+    virus_in_stool <- is_shedder & status %in% c("i2", "r1")
+    daily_stool_test_results <- run_tests(virus_in_stool, stool_sens, stool_spec, 1, max_days)$results
 
     # Run tests
     tests <- list(
-      symptmos    = symptoms,
+      symptoms    = symptoms,
       serology    = run_tests(status %in% c("r1", "r2"), serology_sens, serology_spec, serology_interval, max_days),
       swab        = run_tests(status %in% c("i1", "i2"), swab_sens,     swab_spec,     swab_interval,     max_days),
-      stool14     = run_tests(virus_in_stool,            stool_sens,    stool_spec,    14,                max_days),
-      stool28     = run_tests(virus_in_stool,            stool_sens,    stool_spec,    28,                max_days),
-      every_stool = run_tests(virus_in_stool,            stool_sens,    stool_spec,    donation_interval, max_days)
+      stool14     = run_tests(virus_in_stool,            1.0,           1.0,           14,                max_days),
+      stool28     = run_tests(daily_stool_test_results,  1.0,           1.0,           28,                max_days),
+      every_stool = run_tests(daily_stool_test_results,  1.0,           1.0,           donation_interval, max_days)
     )
 
     # Get the first day that at least one of the tests had as its last day
     donation_days <- seq(1, max_days, by = donation_interval)
 
     list(
+      status = status,
       donation_days = donation_days,
       virus_in_stool = virus_in_stool,
+      daily_stool_test_results = daily_stool_test_results,
       tests = tests
     )
   })
