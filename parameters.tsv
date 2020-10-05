@@ -3,7 +3,7 @@ n_iter	1e4	NA	NA	fixed	Number of simulations
 max_days	365	NA	NA	fixed	Days until end of simulation
 donation_interval	4	1	10	integer	Days between donations
 incidence	1e-3	1e-4	1e-2	real	Daily probability of infection
-asymp_prob	0.60	0.30	0.90	real	Probability that an infected donor is asymptomatic
+asymp_prob	0.40	0.10	0.70	real	Probability that an infected donor is asymptomatic
 i1_duration	2	1	4	integer	Duration of infected, pre-shed period
 i2_duration	5	3	10	integer	Duration of infected, shedding period
 r1_duration	15	10	30	integer	Duration of recovered, shedding period
