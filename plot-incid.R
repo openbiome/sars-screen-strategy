@@ -13,6 +13,9 @@ with(results, {
   if (any(n_positive > n_positive_max)) stop("over positive limit")
 })
 
+# Transform 1e-4 to "10^`-4`" for nice plotting
+as_exponential <- function(x) as.character(math_format()(log10(x)))
+
 plot_data <- results %>%
   mutate(
     n_positive = factor(case_when(
@@ -36,12 +39,8 @@ plot_data <- results %>%
   pivot_longer(cols = c(n_positive, n_negative)) %>%
   arrange(incidence) %>%
   mutate(
-    row_label = recode(incidence,
-      `1e-4` = "10^-4",
-      `1e-3` = "10^-3",
-      `1e-2` = "10^-2",
-    ),
-    row_label = fct_inorder(row_label),
+    row_label = as_exponential(incidence),
+    row_label = fct_inorder(factor(row_label)),
     col_label = recode(name,
       n_positive = "'Virus-positive donations'",
       n_negative = "'Virus-negative donations'"
