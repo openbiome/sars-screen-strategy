@@ -1,10 +1,25 @@
 #!/usr/bin/env Rscript
 
 library(tidyverse)
-library(cowplot)
-source("analyze-utils.R") # for colors
+source("plot-utils.R") # for ggsave2
 
 results <- read_rds("cache/analysis-base.rds")
+
+# Strategies, in order, with colors
+strategies <- tribble(
+  ~strategy,                   ~test_suite,                                      ~color,
+  "Symptoms only",             c("symptoms"),                                    "black",
+  "Stool only (28)",           c("symptoms", "stool28"),                         "#984ea3",
+  "Stool only (14)",           c("symptoms", "stool14"),                         "#ba89c2",
+  "Stool only (every)",        c("symptoms", "every_stool"),                     "#ddc4e0",
+  "Swab only",                 c("symptoms", "swab"),                            "#e41a1c",
+  "Swab, stool (28)",          c("symptoms", "swab", "stool28"),                 "#377eb8",
+  "Swab, stool (14)",          c("symptoms", "swab", "stool14"),                 "#7aa9d0",
+  "Swab, stool (every)",       c("symptoms", "swab", "every_stool"),             "#bcd4e7",
+  "Swab, serology",            c("symptoms", "swab", "serology"),                "#4daf4a",
+  "Swab, ser., stool (every)", c("symptoms", "swab", "serology", "every_stool"), "#a6d7a5"
+) %>%
+  mutate_at("strategy", fct_inorder)
 
 plot <- results %>%
   pivot_longer(cols = c(n_positive, n_negative)) %>%
@@ -32,6 +47,4 @@ plot <- results %>%
   theme_cowplot() +
   theme(legend.position = "bottom")
 
-ggsave("results/results-base.pdf", width = 7.2)
-ggsave("results/results-base.png", width = 7.2)
-ggsave("results/results-base.eps", width = 7.2)
+ggsave2("results/results-base", width = 7.2)

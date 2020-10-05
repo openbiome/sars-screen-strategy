@@ -1,7 +1,7 @@
 #!/usr/bin/env Rscript
 
 library(tidyverse)
-library(cowplot)
+source("plot-utils.R")
 
 parameters <- read_tsv("parameters.tsv")
 

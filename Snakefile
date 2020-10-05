@@ -6,7 +6,7 @@ rule clean:
 
 rule plot:
     output: "results/results-{x}.pdf"
-    input: "cache/analysis-{x}.rds", "analyze-utils.R", script="plot-{x}.R"
+    input: "cache/analysis-{x}.rds", "plot-utils.R", script="plot-{x}.R"
     shell: "./{input.script}"
 
 rule analyze:
