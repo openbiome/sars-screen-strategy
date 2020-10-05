@@ -15,7 +15,14 @@ with(results, {
 
 plot_data <- results %>%
   mutate(
-    n_positive = factor(n_positive),
+    n_positive = factor(case_when(
+        n_positive == 0 ~ "0",
+        n_positive %in% c(1, 2) ~ "1-2",
+        n_positive %in% c(3, 4) ~ "3-4",
+        n_positive == 5 ~ "5"
+      ),
+      levels = c("0", "1-2", "3-4", "5")
+    ),
     n_negative = factor(
       case_when(
         between(n_negative,  0, 24) ~  "0-24",
@@ -30,7 +37,6 @@ plot_data <- results %>%
   arrange(incidence) %>%
   mutate(
     row_label = recode(incidence,
-      `1e-5` = "10^-5",
       `1e-4` = "10^-4",
       `1e-3` = "10^-3",
       `1e-2` = "10^-2",
@@ -40,17 +46,25 @@ plot_data <- results %>%
       n_positive = "'Virus-positive donations'",
       n_negative = "'Virus-negative donations'"
     )
+  ) %>%
+  # go from each row being a simulation to each row being a
+  # incidence/strategy/no.simulations combo
+  count(col_label, row_label, strategy, value) %>%
+  # include zero counts (e.g., no positives)
+  complete(
+    nesting(col_label, row_label, value), strategy,
+    fill = list(n = 0)
   )
 
 plot <- plot_data %>%
-  ggplot(aes(value)) +
+  ggplot(aes(value, n, fill = strategy)) +
   facet_grid(
     rows = vars(row_label),
     cols = vars(col_label),
     scales = "free_x",
     labeller = label_parsed
   ) +
-  geom_bar(aes(fill = strategy), position = "dodge") +
+  geom_col(position = "dodge") +
   scale_y_continuous(expand = c(0, 250)) +
   scale_fill_manual(
     breaks = strategies$strategy,

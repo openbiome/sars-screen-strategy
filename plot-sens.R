@@ -29,10 +29,9 @@ plot_data <- results %>%
   )
 
 plot <- plot_data %>%
-  ggplot(aes(par_value, n_positive)) +
+  ggplot(aes(par_value, factor(n_positive))) +
   facet_wrap(vars(par_name), scales = "free") +
-  geom_point(shape = 1, position = position_jitter(height = 0.1)) +
-  scale_y_continuous(breaks = 1:3) +
+  geom_boxplot() +
   labs(
     x = "Parameter value",
     y = "No. positive donations released"
