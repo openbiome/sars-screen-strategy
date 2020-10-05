@@ -5,11 +5,12 @@ library(cowplot)
 source("analyze-utils.R") # for strategy colors
 
 results <- read_rds("cache/analysis-incid.rds")
+n_positive_max <- 10
 
 # Check that the categories I'll use are good ones
 with(results, {
   if (any(n_negative > 99)) stop("over negative limit")
-  if (any(n_positive > 3)) stop("over positive limit")
+  if (any(n_positive > n_positive_max)) stop("over positive limit")
 })
 
 plot_data <- results %>%
@@ -32,6 +33,7 @@ plot_data <- results %>%
       `1e-5` = "10^-5",
       `1e-4` = "10^-4",
       `1e-3` = "10^-3",
+      `1e-2` = "10^-2",
     ),
     row_label = fct_inorder(row_label),
     col_label = recode(name,

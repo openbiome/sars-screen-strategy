@@ -16,11 +16,17 @@ results <- read_rds("cache/analysis-sens.rds") %>%
   select_at(c("iter", "strategy", par_names, out_names))
 
 plot_data <- results %>%
-  filter(strategy == "Swab, ser., stool (every)") %>%
+  filter(
+    strategy == "Swab, ser., stool (every)",
+    n_positive > 0
+  ) %>%
   # remove fixed columns
   select_if(function(x) length(unique(x)) > 1) %>%
-  # intersect here because of columns dropped by select_if
-  pivot_longer(cols = intersect(par_names, names(.)), names_to = "par_name", values_to = "par_value")
+  pivot_longer(
+    # intersect here because of columns dropped by select_if
+    cols = intersect(par_names, names(.)),
+    names_to = "par_name", values_to = "par_value"
+  )
 
 plot <- plot_data %>%
   ggplot(aes(par_value, n_positive)) +
@@ -35,6 +41,7 @@ plot <- plot_data %>%
   theme(axis.text.x = element_text(size = 8))
 
 ggsave("results/results-sens.pdf", width = 9, height = 6.5, useDingbats = FALSE)
+ggsave("results/results-sens.png", width = 9, height = 6.5)
 
 # Correlations --------------------------------------------------------
 
