@@ -70,6 +70,7 @@ plot <- plot_data %>%
 
 ggsave("results/results-incid.pdf", width = 7.2)
 ggsave("results/results-incid.png", width = 7.2)
+ggsave("results/results-incid.eps", width = 7.2)
 
 
 # Make a table of the number of positive donations released

@@ -42,6 +42,7 @@ plot <- plot_data %>%
 
 ggsave("results/results-sens.pdf", width = 9, height = 6.5, useDingbats = FALSE)
 ggsave("results/results-sens.png", width = 9, height = 6.5)
+ggsave("results/results-sens.eps", width = 9, height = 6.5)
 
 # Correlations --------------------------------------------------------
 

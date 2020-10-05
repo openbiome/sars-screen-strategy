@@ -34,3 +34,4 @@ plot <- results %>%
 
 ggsave("results/results-base.pdf", width = 7.2)
 ggsave("results/results-base.png", width = 7.2)
+ggsave("results/results-base.eps", width = 7.2)
