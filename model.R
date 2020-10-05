@@ -118,7 +118,7 @@ model <- function(par) {
       symptoms    = symptoms,
       serology    = run_tests(status %in% c("r1", "r2"), serology_sens, serology_spec, serology_interval, max_days),
       swab        = run_tests(status %in% c("i1", "i2"), swab_sens,     swab_spec,     swab_interval,     max_days),
-      stool14     = run_tests(virus_in_stool,            1.0,           1.0,           14,                max_days),
+      stool14     = run_tests(daily_stool_test_results,  1.0,           1.0,           14,                max_days),
       stool28     = run_tests(daily_stool_test_results,  1.0,           1.0,           28,                max_days),
       every_stool = run_tests(daily_stool_test_results,  1.0,           1.0,           donation_interval, max_days)
     )
