@@ -16,10 +16,8 @@ results <- read_rds("cache/analysis-sens.rds") %>%
   select_at(c("iter", "strategy", par_names, out_names))
 
 plot_data <- results %>%
-  filter(
-    strategy == "Swab, ser., stool (every)",
-    n_positive > 0
-  ) %>%
+  # look only at 1 strategy
+  filter(strategy == "Swab, ser., stool (every)") %>%
   # remove fixed columns
   select_if(function(x) length(unique(x)) > 1) %>%
   pivot_longer(

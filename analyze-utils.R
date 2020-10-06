@@ -22,3 +22,19 @@ get_releases <- function(sim, test_suite) {
     n_negative = n_negative
   )
 }
+
+# Strategies and the corresponding testing suites
+strategies <- tribble(
+  ~strategy,                   ~test_suite,
+  "Symptoms only",             c("symptoms"),
+  "Stool only (28)",           c("symptoms", "stool28"),
+  "Stool only (14)",           c("symptoms", "stool14"),
+  "Stool only (every)",        c("symptoms", "every_stool"),
+  "Swab only",                 c("symptoms", "swab"),
+  "Swab, stool (28)",          c("symptoms", "swab", "stool28"),
+  "Swab, stool (14)",          c("symptoms", "swab", "stool14"),
+  "Swab, stool (every)",       c("symptoms", "swab", "every_stool"),
+  "Swab, serology",            c("symptoms", "swab", "serology"),
+  "Swab, ser., stool (every)", c("symptoms", "swab", "serology", "every_stool"),
+) %>%
+  mutate_at("strategy", fct_inorder)
