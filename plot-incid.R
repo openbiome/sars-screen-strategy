@@ -78,10 +78,9 @@ counts_glm <- counts %>%
 
 
 glm_plot <- counts_glm %>%
-  # throw in a dummy line to ensure we have the refence category
-  bind_rows(tibble(strategy = "Symptoms only (ref.)", incidence = 1e-4)) %>%
   mutate(
     incidence_log10 = factor(log10(incidence)),
+    strategy = recode(strategy, `Symptoms only` = "Symptoms only (ref.)"),
     strategy = fct_reorder(factor(strategy), estimate)
   ) %>%
   ggplot(aes(estimate, strategy)) +
