@@ -64,12 +64,18 @@ counts %>%
 
 counts %>%
   mutate(range = map2_chr(n_positive, n_total, get_range)) %>%
+  select(incidence, strategy, range) %>%
   pivot_wider(names_from = incidence, values_from = range) %>%
   write_tsv("results/results-incid.tsv")
 
+# Write a table showing the number of donations released
+counts %>%
+  select(incidence, strategy, n_total) %>%
+  pivot_wider(names_from = incidence, values_from = n_total) %>%
+  write_tsv("results/results-incid-n.tsv")
+
 
 # Plot of proportions -------------------------------------------------
-
 
 prop_plot <- counts %>%
   # Add a dummy (white) data point
@@ -115,19 +121,28 @@ glm_results <- counts %>%
     coef = map(model, ~ tidy(., conf.int = TRUE))
   ) %>%
   select(incidence, coef) %>%
-  unnest(coef)
-
-glm_plot <- glm_results %>%
+  unnest(coef) %>%
+  # get only the strategies
   filter(term != "(Intercept)") %>%
   mutate(strategy = str_replace(term, "^strategy", "")) %>%
+  # Recast values as odds ratio (rather than log odds)
+  mutate_at(c("estimate", "conf.low", "conf.high"), exp) %>%
+  select(incidence, strategy, estimate, conf.low, conf.high)
+
+# Write a table
+glm_results %>%
+  mutate_at("strategy", ~ fct_reorder2(factor(.), incidence, estimate)) %>%
+  arrange(incidence, strategy) %>%
+  mutate_at(c("estimate", "conf.low", "conf.high"), ~ signif(., 3)) %>%
+  write_tsv("results/results-incid-glm.tsv")
+
+glm_plot <- glm_results %>%
   # throw in a dummy line to ensure we have the refence category
   bind_rows(tibble(strategy = "Symptoms only (ref.)", incidence = 1e-4)) %>%
   mutate(
     incidence_log10 = factor(log10(incidence)),
     strategy = fct_reorder(factor(strategy), estimate)
   ) %>%
-  # Recast values as odds ratio (rather than log odds)
-  mutate_at(c("estimate", "conf.low", "conf.high"), exp) %>%
   ggplot(aes(estimate, strategy)) +
   geom_vline(xintercept = c(0, 1), linetype = 1) +
   geom_pointrange(
