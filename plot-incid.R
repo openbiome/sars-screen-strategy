@@ -12,72 +12,21 @@ counts <- results %>%
   summarize_at(c("n_positive", "n_negative"), sum) %>%
   ungroup() %>%
   arrange(incidence, strategy) %>%
-  mutate(
-    n_total = n_positive + n_negative,
-    binom_test = map2(n_positive, n_total, binom.test),
-    data = map(binom_test, tidy)
-  ) %>%
-  select(incidence, strategy, n_positive, n_negative, n_total, data) %>%
-  unnest(data)
-
-# Write tables of proportions -----------------------------------------
-
-# Helper functions
-
-lsignif <- function(x, digits) lapply(x, function(xx) signif(xx, digits))
-
-any_duplicated_nonzero <- function(x) {
-  as.numeric(x) %>%
-    { duplicated(.)[. != 0] } %>%
-    any()
-}
-
-min_signif <- function(x) {
-  if (any_duplicated_nonzero(x)) stop("Duplicated non-zero values")
-
-  digits <- 1
-  while (any_duplicated_nonzero(lsignif(x, digits))) digits <- digits + 1
-
-  lsignif(x, digits)
-}
-
-get_range <- function(x, n, digits = 1) {
-  test <- binom.test(x, n)
-
-  values <- list(
-    estimate = test$estimate,
-    lci = test$conf.int[1], uci = test$conf.int[2]
-  ) %>%
-    min_signif() %>%
-    # pcm = per cent mille = 1 per 100,000
-    lapply(function(y) str_c(y * 1e5, " pcm"))
-
-  with(values, { str_glue("{estimate} ({lci} to {uci}; {x}/{n})")} )
-}
-
-# Make nice tables of proportions, measured as counts and as 1 per X
-counts %>%
-  mutate(one_per = map_dbl(estimate, ~ signif(1 / ., 1))) %>%
-  select(incidence, strategy, one_per) %>%
-  pivot_wider(names_from = incidence, values_from = one_per) %>%
-  write_tsv("results/results-incid-per.tsv")
-
-counts %>%
-  mutate(range = map2_chr(n_positive, n_total, get_range)) %>%
-  select(incidence, strategy, range) %>%
-  pivot_wider(names_from = incidence, values_from = range) %>%
-  write_tsv("results/results-incid.tsv")
-
-# Write a table showing the number of donations released
-counts %>%
-  select(incidence, strategy, n_total) %>%
-  pivot_wider(names_from = incidence, values_from = n_total) %>%
-  write_tsv("results/results-incid-n.tsv")
+  mutate(n_total = n_positive + n_negative)
 
 
 # Plot of proportions -------------------------------------------------
 
-prop_plot <- counts %>%
+# Get 95% CIs on proportions
+counts_prop <- counts %>%
+  mutate(
+    binom_test = map2(n_positive, n_total, binom.test),
+    data = map(binom_test, tidy)
+  ) %>%
+  select(incidence, strategy, data) %>%
+  unnest(data)
+
+prop_plot <- counts_prop %>%
   # Add a dummy (white) data point
   mutate(color = "black") %>%
   bind_rows(tibble(
@@ -110,33 +59,25 @@ prop_plot <- counts %>%
 
 ggsave2("results/results-incid", height = 4, width = 8)
 
-# Plot of odds ratios -------------------------------------------------
 
-glm_results <- counts %>%
-  # filter(num > 0) %>%
+# Plot and table of odds ratios ----------------------------------------
+
+counts_glm <- counts %>%
   select(incidence, strategy, n_positive, n_negative) %>%
   nest(data = c(strategy, n_positive, n_negative)) %>%
   mutate(
     model = map(data, ~ glm(cbind(n_positive, n_negative) ~ strategy, family = "binomial", data = .)),
     coef = map(model, ~ tidy(., conf.int = TRUE))
   ) %>%
-  select(incidence, coef) %>%
-  unnest(coef) %>%
-  # get only the strategies
-  filter(term != "(Intercept)") %>%
-  mutate(strategy = str_replace(term, "^strategy", "")) %>%
+  unnest(data, coef) %>%
   # Recast values as odds ratio (rather than log odds)
-  mutate_at(c("estimate", "conf.low", "conf.high"), exp) %>%
-  select(incidence, strategy, estimate, conf.low, conf.high)
+  mutate_at(
+    c("estimate", "conf.low", "conf.high"),
+    ~ if_else(strategy == "Symptoms only", 1, exp(.), 2)
+  )
 
-# Write a table
-glm_results %>%
-  mutate_at("strategy", ~ fct_reorder2(factor(.), incidence, estimate)) %>%
-  arrange(incidence, strategy) %>%
-  mutate_at(c("estimate", "conf.low", "conf.high"), ~ signif(., 3)) %>%
-  write_tsv("results/results-incid-glm.tsv")
 
-glm_plot <- glm_results %>%
+glm_plot <- counts_glm %>%
   # throw in a dummy line to ensure we have the refence category
   bind_rows(tibble(strategy = "Symptoms only (ref.)", incidence = 1e-4)) %>%
   mutate(
@@ -171,3 +112,11 @@ glm_plot <- glm_results %>%
   )
 
 ggsave2("results/results-incid-odds", height = 5)
+
+# Output a table
+counts_glm %>%
+  mutate_at(c("estimate", "conf.low", "conf.high"), ~ signif(., 2)) %>%
+  mutate(range = str_glue("{estimate} ({conf.low} to {conf.high})")) %>%
+  select(strategy, incidence, n_positive, n_negative, range) %>%
+  arrange(strategy, desc(incidence)) %>%
+  write_tsv("results/results-incid.tsv")
