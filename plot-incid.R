@@ -113,10 +113,19 @@ glm_plot <- counts_glm %>%
 
 ggsave2("results/results-incid-odds", height = 5)
 
+
 # Output a table
-counts_glm %>%
+table_left <- counts_glm %>%
   mutate_at(c("estimate", "conf.low", "conf.high"), ~ signif(., 2)) %>%
-  mutate(range = str_glue("{estimate} ({conf.low} to {conf.high})")) %>%
-  select(strategy, incidence, n_positive, n_negative, range) %>%
+  mutate(or_range = str_glue("{estimate} ({conf.low} to {conf.high})")) %>%
+  select(strategy, incidence, n_positive, n_negative, or_range)
+
+table_right <- counts_prop %>%
+  mutate_at(c("estimate", "conf.low", "conf.high"), ~ signif(. * 10 ** 5, 2)) %>%
+  mutate(prop_range = str_glue("{estimate} ({conf.low} to {conf.high})")) %>%
+  select(strategy, incidence, prop_range)
+
+left_join(table_left, table_right, by = c("strategy", "incidence")) %>%
+  select(strategy, incidence, n_positive, n_negative, prop_range, or_range) %>%
   arrange(strategy, desc(incidence)) %>%
   write_tsv("results/results-incid.tsv")
