@@ -3,16 +3,17 @@ n_iter	1e4	NA	NA	fixed	Number of simulations
 max_days	365	NA	NA	fixed	Days until end of simulation
 donation_interval	4	1	10	integer	Days between donations
 incidence	1e-3	1e-4	1e-2	real	Daily probability of infection
-asymp_prob	0.40	0.10	0.70	real	Probability that an infected donor is asymptomatic
 i1_duration	2	1	4	integer	Duration of infected, pre-shed period
 i2_duration	5	3	10	integer	Duration of infected, shedding period
 r1_duration	15	10	30	integer	Duration of recovered, shedding period
+asymp_prob	0.40	0.10	0.70	real	Probability that an infected donor is asymptomatic
 shed_prob	0.50	0.33	0.66	real	Probability that an infected donor will shed virus in stool
+symp_reject_days	14	NA	NA	integer	Days before symptom onset for which donations are rejected
 serology_interval	60	NA	NA	fixed	Days between serology tests
 serology_sens	0.75	0.65	0.90	real	Serology test sensitivity
 serology_spec	0.98	0.90	0.99	real	Serology test specificity
 swab_interval	14	NA	NA	fixed	Days between swab tests
 swab_sens	0.75	0.50	0.98	real	Swab test sensitivity
 swab_spec	0.95	0.90	0.99	real	Swab test specificity
-stool_sens	0.90	0.50	0.99	real	Stool test sensitivity
+stool_sens	0.80	0.50	0.99	real	Stool test sensitivity
 stool_spec	0.99	0.95	0.99	real	Stool test specificity
