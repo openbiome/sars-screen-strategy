@@ -70,8 +70,8 @@ model <- function(par) {
     status <- rep(NA, max_days)
 
     # Determine days of status changes
-    # (add 1 to rnbinom for 1-indexing)
-    i1_day <- 1 + rnbinom(1, 1, incidence)
+    # (add 1 to rgeom for 1-indexing)
+    i1_day <- 1 + rgeom(1, incidence)
     i2_day <- i1_day + i1_duration
     r1_day <- i2_day + i2_duration
     r2_day <- r1_day + r1_duration
@@ -93,16 +93,21 @@ model <- function(par) {
     possibly_symptomatic <- rbernoulli(1, 1 - asymp_prob)
     is_symptomatic <- possibly_symptomatic && i1_day <= max_days
 
-    # Build a test-like results list for symptoms:
-    # - The "test" is the first day of infection, or the last day of the simulation
-    # - The "result" is positive if infected during the simulation and has
-    #   possibility for symptoms
-    # - Last release day is: if not symptomatic, end of simulation; if
-    #   symptomatic, 14 days before symptoms emerged
+    # Build a test-like results list for symptoms
     symptoms <- list(
+      # The "test" is the first day of infection,
+      # or the last day of the simulation
       test_days = min(i1_day, max_days),
+      # The "result" is positive if infected during the simulation and
+      # has possibility for symptoms
       results = is_symptomatic,
-      last_release_day = if_else(is_symptomatic, max(i1_day - 14, 0), max_days)
+      # Last release day is: if not symptomatic, end of simulation;
+      # if symptomatic, 14 days before symptoms emerged
+      last_release_day = if_else(
+        is_symptomatic,
+        max(i1_day - symp_reject_days, 0),
+        max_days
+      )
     )
 
     # Determine presence of virus in stool:
