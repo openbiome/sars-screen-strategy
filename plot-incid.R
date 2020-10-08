@@ -30,8 +30,8 @@ prop_plot <- counts_prop %>%
   # Add a dummy (white) data point
   mutate(color = "black") %>%
   bind_rows(tibble(
-      strategy = "Symptoms only", incidence = 1e-4, color = "white",
-      estimate = 4e-4, conf.low = 4e-4, conf.high = 4e-4
+    strategy = "Symptoms only", incidence = 1e-4, color = NA,
+    estimate = 4e-4, conf.low = 4e-4, conf.high = 4e-4
   )) %>%
   # Recast values as percents
   mutate_at(c("estimate", "conf.low", "conf.high"), ~ . * 100) %>%
